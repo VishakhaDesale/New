@@ -160,11 +160,12 @@ This section presents the two-stage framework implementation, Prophet configurat
 
 ### A. *System Architecture*
 
-The framework implements a three-tier architecture: (1) **Frontend (React.js)**: Student portal for meal coupon purchases, QR code generation, and admin dashboard for procurement lists. (2) **Backend (Node.js/Express)**: RESTful API handling authentication, MongoDB database operations, and scheduled tasks for weekly data aggregation and monthly forecast triggering. (3) **Forecasting Microservice (Python/Flask)**: Hosts 21 trained Prophet models for meal prediction and ingredient calculation via HTTP endpoints.
+
+The framework implements a three-tier architecture, realized as three main models: two on the user side and one on the admin side. Specifically: (1) **Frontend (React.js)**: Two user-side models—one for student meal selection and recommendation, and one for QR code generation and validation; and (2) **Admin dashboard** for procurement management. (3) **Backend (Node.js/Express)**: RESTful API handling authentication, MongoDB database operations, and scheduled tasks for weekly data aggregation and monthly forecast triggering. (4) **Forecasting Microservice (Python/Flask)**: Admin-side model hosting 21 trained Prophet models for meal prediction and ingredient calculation via HTTP endpoints.
 
 **Data Flow:** Students purchase weekly meal coupons → Backend stores selections in MongoDB → Weekly aggregation creates training data → Monthly trigger invokes forecasting microservice → Prophet generates meal predictions → Ingredient algorithm converts to procurement quantities → Admin dashboard displays results.
 
-![Fig. 1.](placeholder_architecture.png)  
+![Fig. 1.](Fig1_Architecture.png)  
 *Fig. 1. Two-stage forecasting framework architecture showing student interaction layer, backend aggregation pipeline, and Prophet-based forecasting microservice with ingredient conversion.*
 
 
@@ -349,17 +350,13 @@ Output: validation_result {success: boolean, student_name: string}
 21: Return {success: true, student_name: buyer_record.name}
 ```
 
----
-
-## V. EXPERIMENTS
-
-### A. *Dataset and Experimental Setup*
+### E. *Dataset and Baseline Models*
 
 The framework was evaluated using 10 weeks of meal purchase data from a campus dining facility serving approximately 150 students. The dataset includes purchase records for 21 meal slots (7 days × 3 meals) with weekly menu cycles. Historical data (weeks 1-7) trained the Prophet models, with weeks 8-10 serving as test data for forecast accuracy evaluation.
 
 **Baseline Models:** The evaluation compares Prophet against: (1) **Naive Forecast**: Uses previous week's attendance as next week's prediction. (2) **Moving Average**: 3-week rolling average. (3) **ARIMA**: Auto-configured using auto.arima [16] with automatic parameter selection. (4) **LSTM**: Two-layer network (64 hidden units) trained on 7-week sliding windows.
 
-### B. *Evaluation Metrics*
+### F. *Evaluation Metrics*
 
 Model performance was assessed using three standard metrics: Mean Absolute Percentage Error (MAPE), Root Mean Squared Error (RMSE), and Mean Absolute Error (MAE). Statistical significance was validated through paired t-tests comparing Prophet versus each baseline across all 21 day-meal combinations, with Cohen's d effect sizes quantifying practical significance.
 
@@ -391,9 +388,6 @@ Table II compares Prophet against baseline methods on the 10-week evaluation dat
 
 **Statistical Significance:** Paired t-tests confirmed Prophet superiority over all baselines (p < 0.01). Cohen's d effect sizes indicate medium to large practical significance: Prophet vs LSTM (d=0.72), Prophet vs ARIMA (d=1.14), Prophet vs Naive (d=2.38).
 
-![Fig. 2.](placeholder_comparison.png)  
-*Fig. 2. MAPE comparison across forecasting methods showing Prophet's superior performance over deep learning (LSTM), statistical (ARIMA), and naive baselines.*
-
 ### B. *Ingredient-Level Prediction Accuracy*
 
 The ingredient conversion algorithm achieved 3.8% MAPE for monthly procurement quantities, compared to 22% error with manual mess manager estimation.
@@ -416,9 +410,6 @@ The ingredient conversion algorithm achieved 3.8% MAPE for monthly procurement q
 **Cost Savings:** Monthly savings of ₹6,700 ($80 USD) were estimated from reduced over-procurement and spoilage for a 150-student facility.
 
 **Environmental Impact:** The waste reduction translates to 102.8 kg less food waste monthly, equivalent to 277 kg CO₂ emissions avoided using EPA lifecycle emissions factor of 2.7 kg CO₂e per kg food waste.
-
-![Fig. 3.](placeholder_waste_reduction.png)  
-*Fig. 3. Projected monthly food waste reduction trajectory comparing AI-driven procurement versus manual estimation baseline over 12-month period.*
 
 ### D. *Ablation Study*
 
